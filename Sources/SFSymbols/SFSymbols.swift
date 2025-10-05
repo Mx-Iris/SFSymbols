@@ -37,7 +37,7 @@ import SwiftUI
 @available(*, deprecated, renamed: "SFSymbols", message: "Use SFSymbols")
 public typealias SFSymbol = SFSymbols
 
-@MainActor
+//@MainActor
 public struct SFSymbols {
     public let name: SymbolName
 
@@ -250,7 +250,7 @@ extension SFSymbols: View {
 
 #endif
 
-@MainActor
+//@MainActor
 extension NSUIImage {
     public static func symbol(name: SFSymbols.SymbolName) -> NSUIImage {
         SFSymbols(name: name).nsuiImgae
