@@ -45,8 +45,14 @@ public struct SFSymbols {
 
     public private(set) var variableValue: Double?
 
-    public init(name: SymbolName) {
+    private init(name: SymbolName, configuration: NSUISymbolConfiguration?, variableValue: Double?) {
         self.name = name
+        self.configuration = configuration
+        self.variableValue = variableValue
+    }
+    
+    public init(name: SymbolName) {
+        self.init(name: name, configuration: nil, variableValue: nil)
     }
 
     public init(name: SymbolName, pointSize: CGFloat, weight: NSUISymbolWeight) {
@@ -54,11 +60,10 @@ public struct SFSymbols {
     }
 
     public init(name: SymbolName, pointSize: CGFloat, weight: NSUISymbolWeight, scale: NSUISymbolScale?) {
-        self.init(name: name)
         if let scale {
-            self.configuration = .init(pointSize: pointSize, weight: weight, scale: scale)
+            self.init(name: name, configuration: .init(pointSize: pointSize, weight: weight, scale: scale), variableValue: nil)
         } else {
-            self.configuration = .init(pointSize: pointSize, weight: weight)
+            self.init(name: name, configuration: .init(pointSize: pointSize, weight: weight), variableValue: nil)
         }
     }
 
@@ -71,13 +76,14 @@ public struct SFSymbols {
     }
 
     public init(name: SymbolName, textStyle: NSUISymbolTextStyle?, scale: NSUISymbolScale?) {
-        self.init(name: name)
         if let textStyle, let scale {
-            self.configuration = .init(textStyle: textStyle, scale: scale)
+            self.init(name: name, configuration: .init(textStyle: textStyle, scale: scale), variableValue: nil)
         } else if let textStyle {
-            self.configuration = .init(textStyle: textStyle)
+            self.init(name: name, configuration: .init(textStyle: textStyle), variableValue: nil)
         } else if let scale {
-            self.configuration = .init(scale: scale)
+            self.init(name: name, configuration: .init(scale: scale), variableValue: nil)
+        } else {
+            self.init(name: name, configuration: nil, variableValue: nil)
         }
     }
 
@@ -106,58 +112,50 @@ public struct SFSymbols {
     }
 
     @available(macOS 12.0, *)
-    public mutating func pointSize(_ pointSize: CGFloat, weight: NSUISymbolWeight) -> Self {
+    public func pointSize(_ pointSize: CGFloat, weight: NSUISymbolWeight) -> Self {
         let otherConfiguration = NSUISymbolConfiguration(pointSize: pointSize, weight: weight)
-        configuration = configuration.map { $0.applying(otherConfiguration) } ?? otherConfiguration
-        return self
+        return .init(name: name, configuration: configuration.map { $0.applying(otherConfiguration) } ?? otherConfiguration, variableValue: variableValue)
     }
 
     @available(macOS 12.0, *)
-    public mutating func pointSize(_ pointSize: CGFloat, weight: NSUISymbolWeight, scale: NSUISymbolScale) -> Self {
+    public func pointSize(_ pointSize: CGFloat, weight: NSUISymbolWeight, scale: NSUISymbolScale) -> Self {
         let otherConfiguration = NSUISymbolConfiguration(pointSize: pointSize, weight: weight, scale: scale)
-        configuration = configuration.map { $0.applying(otherConfiguration) } ?? otherConfiguration
-        return self
+        return .init(name: name, configuration: configuration.map { $0.applying(otherConfiguration) } ?? otherConfiguration, variableValue: variableValue)
     }
 
     @available(macOS 12.0, *)
-    public mutating func textStyle(_ textStyle: NSUISymbolTextStyle, scale: NSUISymbolScale) -> Self {
+    public func textStyle(_ textStyle: NSUISymbolTextStyle, scale: NSUISymbolScale) -> Self {
         let otherConfiguration = NSUISymbolConfiguration(textStyle: textStyle, scale: scale)
-        configuration = configuration.map { $0.applying(otherConfiguration) } ?? otherConfiguration
-        return self
+        return .init(name: name, configuration: configuration.map { $0.applying(otherConfiguration) } ?? otherConfiguration, variableValue: variableValue)
     }
 
     @available(macOS 12.0, *)
-    public mutating func textStyle(_ textStyle: NSUISymbolTextStyle) -> Self {
+    public func textStyle(_ textStyle: NSUISymbolTextStyle) -> Self {
         let otherConfiguration = NSUISymbolConfiguration(textStyle: textStyle)
-        configuration = configuration.map { $0.applying(otherConfiguration) } ?? otherConfiguration
-        return self
+        return .init(name: name, configuration: configuration.map { $0.applying(otherConfiguration) } ?? otherConfiguration, variableValue: variableValue)
     }
 
     @available(macOS 12.0, iOS 15.0, watchOS 8.0, tvOS 15.0, *)
-    public mutating func hierarchicalColor(_ color: NSUIColor) -> Self {
+    public func hierarchicalColor(_ color: NSUIColor) -> Self {
         let otherConfiguration = NSUISymbolConfiguration(hierarchicalColor: color)
-        configuration = configuration.map { $0.applying(otherConfiguration) } ?? otherConfiguration
-        return self
+        return .init(name: name, configuration: configuration.map { $0.applying(otherConfiguration) } ?? otherConfiguration, variableValue: variableValue)
     }
 
     @available(macOS 12.0, iOS 15.0, watchOS 8.0, tvOS 15.0, *)
-    public mutating func paletteColors(_ colors: [NSUIColor]) -> Self {
+    public func paletteColors(_ colors: [NSUIColor]) -> Self {
         let otherConfiguration = NSUISymbolConfiguration(paletteColors: colors)
-        configuration = configuration.map { $0.applying(otherConfiguration) } ?? otherConfiguration
-        return self
+        return .init(name: name, configuration: configuration.map { $0.applying(otherConfiguration) } ?? otherConfiguration, variableValue: variableValue)
     }
 
     @available(macOS 12.0, *)
-    public mutating func scale(_ scale: NSUISymbolScale) -> Self {
+    public func scale(_ scale: NSUISymbolScale) -> Self {
         let otherConfiguration = NSUISymbolConfiguration(scale: scale)
-        configuration = configuration.map { $0.applying(otherConfiguration) } ?? otherConfiguration
-        return self
+        return .init(name: name, configuration: configuration.map { $0.applying(otherConfiguration) } ?? otherConfiguration, variableValue: variableValue)
     }
 
     @available(macOS 13.0, iOS 16.0, watchOS 9.0, tvOS 16.0, *)
-    public mutating func variableValue(_ variableValue: Double) -> Self {
-        self.variableValue = variableValue
-        return self
+    public func variableValue(_ variableValue: Double) -> Self {
+        return .init(name: name, configuration: configuration, variableValue: variableValue)
     }
 
     public var nsuiImgae: NSUIImage {
