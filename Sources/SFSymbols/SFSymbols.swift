@@ -1,4 +1,4 @@
-#if canImport(AppKit) && !targetEnvironment(macCatalyst)
+#if canImport(AppKit) && os(macOS)
 
 import AppKit
 
@@ -9,6 +9,10 @@ public typealias NSUISymbolConfiguration = NSImage.SymbolConfiguration
 public typealias NSUISymbolWeight = NSFont.Weight
 public typealias NSUISymbolScale = NSImage.SymbolScale
 public typealias NSUISymbolTextStyle = NSFont.TextStyle
+@available(macOS 26.0, *)
+public typealias NSUISymbolVariableValueMode = NSImage.SymbolVariableValueMode
+@available(macOS 26.0, *)
+public typealias NSUISymbolColorRenderingMode = NSImage.SymbolColorRenderingMode
 
 #elseif canImport(UIKit)
 
@@ -21,6 +25,10 @@ public typealias NSUISymbolConfiguration = UIImage.SymbolConfiguration
 public typealias NSUISymbolWeight = UIImage.SymbolWeight
 public typealias NSUISymbolScale = UIImage.SymbolScale
 public typealias NSUISymbolTextStyle = UIFont.TextStyle
+@available(iOS 26.0, tvOS 26.0, watchOS 26.0, visionOS 26.0, *)
+public typealias NSUISymbolVariableValueMode = UIImage.SymbolVariableValueMode
+@available(iOS 26.0, tvOS 26.0, watchOS 26.0, visionOS 26.0, *)
+public typealias NSUISymbolColorRenderingMode = UIImage.SymbolColorRenderingMode
 
 #else
 
@@ -37,7 +45,6 @@ import SwiftUI
 @available(*, deprecated, renamed: "SFSymbols", message: "Use SFSymbols")
 public typealias SFSymbol = SFSymbols
 
-//@MainActor
 public struct SFSymbols {
     public let name: SymbolName
 
@@ -50,7 +57,7 @@ public struct SFSymbols {
         self.configuration = configuration
         self.variableValue = variableValue
     }
-    
+
     public init(name: SymbolName) {
         self.init(name: name, configuration: nil, variableValue: nil)
     }
@@ -135,13 +142,13 @@ public struct SFSymbols {
         return .init(name: name, configuration: configuration.map { $0.applying(otherConfiguration) } ?? otherConfiguration, variableValue: variableValue)
     }
 
-    @available(macOS 12.0, iOS 15.0, watchOS 8.0, tvOS 15.0, *)
+    @available(macOS 12.0, iOS 15.0, tvOS 15.0, watchOS 8.0, *)
     public func hierarchicalColor(_ color: NSUIColor) -> Self {
         let otherConfiguration = NSUISymbolConfiguration(hierarchicalColor: color)
         return .init(name: name, configuration: configuration.map { $0.applying(otherConfiguration) } ?? otherConfiguration, variableValue: variableValue)
     }
 
-    @available(macOS 12.0, iOS 15.0, watchOS 8.0, tvOS 15.0, *)
+    @available(macOS 12.0, iOS 15.0, tvOS 15.0, watchOS 8.0, *)
     public func paletteColors(_ colors: [NSUIColor]) -> Self {
         let otherConfiguration = NSUISymbolConfiguration(paletteColors: colors)
         return .init(name: name, configuration: configuration.map { $0.applying(otherConfiguration) } ?? otherConfiguration, variableValue: variableValue)
@@ -153,22 +160,51 @@ public struct SFSymbols {
         return .init(name: name, configuration: configuration.map { $0.applying(otherConfiguration) } ?? otherConfiguration, variableValue: variableValue)
     }
 
-    @available(macOS 13.0, iOS 16.0, watchOS 9.0, tvOS 16.0, *)
+    @available(macOS 13.0, iOS 16.0, tvOS 16.0, watchOS 9.0, *)
     public func variableValue(_ variableValue: Double) -> Self {
         return .init(name: name, configuration: configuration, variableValue: variableValue)
     }
 
-    public var nsuiImgae: NSUIImage {
-        #if canImport(AppKit) && !targetEnvironment(macCatalyst)
-        return nsImage
-        #endif
+    @available(macOS 13.0, iOS 16.0, tvOS 16.0, watchOS 9.0, *)
+    public func preferringMonochrome() -> Self {
+        return .init(name: name, configuration: configuration.map { $0.applying(NSUISymbolConfiguration.preferringMonochrome()) }, variableValue: variableValue)
+    }
 
-        #if canImport(UIKit)
+    #if canImport(AppKit) && os(macOS)
+    @available(macOS 13.0, *)
+    public func preferringHierarchical() -> Self {
+        return .init(name: name, configuration: configuration.map { $0.applying(NSUISymbolConfiguration.preferringHierarchical()) }, variableValue: variableValue)
+    }
+    #endif
+
+    @available(macOS 12.0, iOS 15.0, tvOS 15.0, watchOS 9.0, *)
+    public func preferringMulticolor() -> Self {
+        return .init(name: name, configuration: configuration.map { $0.applying(NSUISymbolConfiguration.preferringMulticolor()) }, variableValue: variableValue)
+    }
+
+    @available(macOS 26.0, iOS 26.0, tvOS 26.0, watchOS 26.0, visionOS 26.0, *)
+    public func variableValueMode(_ variableValueMode: NSUISymbolVariableValueMode) -> Self {
+        return .init(name: name, configuration: configuration.map { $0.applying(NSUISymbolConfiguration(variableValueMode: variableValueMode)) }, variableValue: variableValue)
+    }
+
+    @available(macOS 26.0, iOS 26.0, tvOS 26.0, watchOS 26.0, visionOS 26.0, *)
+    public func colorRenderingMode(_ colorRenderingMode: NSUISymbolColorRenderingMode) -> Self {
+        return .init(name: name, configuration: configuration.map { $0.applying(NSUISymbolConfiguration(colorRenderingMode: colorRenderingMode)) }, variableValue: variableValue)
+    }
+}
+
+extension SFSymbols {
+    public var nsuiImgae: NSUIImage {
+        #if canImport(AppKit) && os(macOS)
+        return nsImage
+        #elseif canImport(UIKit)
         return uiImage
+        #else
+        fatalError("Unsupported Platform")
         #endif
     }
 
-    #if canImport(AppKit) && !targetEnvironment(macCatalyst)
+    #if canImport(AppKit) && os(macOS)
     public var nsImage: NSImage {
         var image = if let variableValue, #available(macOS 13.0, *) {
             if name is SystemSymbolName {
@@ -226,15 +262,15 @@ public struct SFSymbols {
     #if canImport(SwiftUI)
 
     public var image: Image {
-        #if canImport(AppKit) && !targetEnvironment(macCatalyst)
+        #if canImport(AppKit) && os(macOS)
         return Image(nsImage: nsImage)
-        #endif
-
-        #if canImport(UIKit)
+        #elseif canImport(UIKit)
         return Image(uiImage: uiImage)
+        #else
+        fatalError("Unsupported Platform")
         #endif
     }
-    
+
     #endif
 }
 
@@ -248,7 +284,6 @@ extension SFSymbols: View {
 
 #endif
 
-//@MainActor
 extension NSUIImage {
     public static func symbol(name: SFSymbols.SymbolName) -> NSUIImage {
         SFSymbols(name: name).nsuiImgae
