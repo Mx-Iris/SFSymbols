@@ -36,7 +36,7 @@ public typealias NSUISymbolColorRenderingMode = UIImage.SymbolColorRenderingMode
 
 #endif
 
-#if canImport(SwiftUI)
+#if canImport(SwiftUI) && SFSYMBOLS_SWIFTUI
 
 import SwiftUI
 
@@ -259,7 +259,7 @@ extension SFSymbols {
 
     #endif
 
-    #if canImport(SwiftUI)
+    #if canImport(SwiftUI) && SFSYMBOLS_SWIFTUI
 
     public var image: Image {
         #if canImport(AppKit) && os(macOS)
@@ -274,7 +274,7 @@ extension SFSymbols {
     #endif
 }
 
-#if canImport(SwiftUI)
+#if canImport(SwiftUI) && SFSYMBOLS_SWIFTUI
 
 extension SFSymbols: View {
     public var body: some View {
@@ -334,7 +334,7 @@ extension NSUIImage {
     }
 }
 
-#if canImport(SwiftUI)
+#if canImport(SwiftUI) && SFSYMBOLS_SWIFTUI
 
 extension Image {
     public init(name: SFSymbols.SymbolName) {
