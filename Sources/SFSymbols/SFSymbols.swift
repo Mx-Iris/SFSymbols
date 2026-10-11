@@ -120,44 +120,37 @@ public struct SFSymbols {
 
     @available(macOS 12.0, *)
     public func pointSize(_ pointSize: CGFloat, weight: NSUISymbolWeight) -> Self {
-        let otherConfiguration = NSUISymbolConfiguration(pointSize: pointSize, weight: weight)
-        return .init(name: name, configuration: configuration.map { $0.applying(otherConfiguration) } ?? otherConfiguration, variableValue: variableValue)
+        applyingConfiguration(NSUISymbolConfiguration(pointSize: pointSize, weight: weight))
     }
 
     @available(macOS 12.0, *)
     public func pointSize(_ pointSize: CGFloat, weight: NSUISymbolWeight, scale: NSUISymbolScale) -> Self {
-        let otherConfiguration = NSUISymbolConfiguration(pointSize: pointSize, weight: weight, scale: scale)
-        return .init(name: name, configuration: configuration.map { $0.applying(otherConfiguration) } ?? otherConfiguration, variableValue: variableValue)
+        applyingConfiguration(NSUISymbolConfiguration(pointSize: pointSize, weight: weight, scale: scale))
     }
 
     @available(macOS 12.0, *)
     public func textStyle(_ textStyle: NSUISymbolTextStyle, scale: NSUISymbolScale) -> Self {
-        let otherConfiguration = NSUISymbolConfiguration(textStyle: textStyle, scale: scale)
-        return .init(name: name, configuration: configuration.map { $0.applying(otherConfiguration) } ?? otherConfiguration, variableValue: variableValue)
+        applyingConfiguration(NSUISymbolConfiguration(textStyle: textStyle, scale: scale))
     }
 
     @available(macOS 12.0, *)
     public func textStyle(_ textStyle: NSUISymbolTextStyle) -> Self {
-        let otherConfiguration = NSUISymbolConfiguration(textStyle: textStyle)
-        return .init(name: name, configuration: configuration.map { $0.applying(otherConfiguration) } ?? otherConfiguration, variableValue: variableValue)
+        applyingConfiguration(NSUISymbolConfiguration(textStyle: textStyle))
     }
 
     @available(macOS 12.0, iOS 15.0, tvOS 15.0, watchOS 8.0, *)
     public func hierarchicalColor(_ color: NSUIColor) -> Self {
-        let otherConfiguration = NSUISymbolConfiguration(hierarchicalColor: color)
-        return .init(name: name, configuration: configuration.map { $0.applying(otherConfiguration) } ?? otherConfiguration, variableValue: variableValue)
+        applyingConfiguration(NSUISymbolConfiguration(hierarchicalColor: color))
     }
 
     @available(macOS 12.0, iOS 15.0, tvOS 15.0, watchOS 8.0, *)
     public func paletteColors(_ colors: [NSUIColor]) -> Self {
-        let otherConfiguration = NSUISymbolConfiguration(paletteColors: colors)
-        return .init(name: name, configuration: configuration.map { $0.applying(otherConfiguration) } ?? otherConfiguration, variableValue: variableValue)
+        applyingConfiguration(NSUISymbolConfiguration(paletteColors: colors))
     }
 
     @available(macOS 12.0, *)
     public func scale(_ scale: NSUISymbolScale) -> Self {
-        let otherConfiguration = NSUISymbolConfiguration(scale: scale)
-        return .init(name: name, configuration: configuration.map { $0.applying(otherConfiguration) } ?? otherConfiguration, variableValue: variableValue)
+        applyingConfiguration(NSUISymbolConfiguration(scale: scale))
     }
 
     @available(macOS 13.0, iOS 16.0, tvOS 16.0, watchOS 9.0, *)
@@ -167,29 +160,34 @@ public struct SFSymbols {
 
     @available(macOS 13.0, iOS 16.0, tvOS 16.0, watchOS 9.0, *)
     public func preferringMonochrome() -> Self {
-        return .init(name: name, configuration: configuration.map { $0.applying(NSUISymbolConfiguration.preferringMonochrome()) }, variableValue: variableValue)
+        applyingConfiguration(NSUISymbolConfiguration.preferringMonochrome())
     }
 
     #if canImport(AppKit) && os(macOS)
     @available(macOS 13.0, *)
     public func preferringHierarchical() -> Self {
-        return .init(name: name, configuration: configuration.map { $0.applying(NSUISymbolConfiguration.preferringHierarchical()) }, variableValue: variableValue)
+        applyingConfiguration(NSUISymbolConfiguration.preferringHierarchical())
     }
     #endif
 
     @available(macOS 12.0, iOS 15.0, tvOS 15.0, watchOS 9.0, *)
     public func preferringMulticolor() -> Self {
-        return .init(name: name, configuration: configuration.map { $0.applying(NSUISymbolConfiguration.preferringMulticolor()) }, variableValue: variableValue)
+        applyingConfiguration(NSUISymbolConfiguration.preferringMulticolor())
     }
 
     @available(macOS 26.0, iOS 26.0, tvOS 26.0, watchOS 26.0, visionOS 26.0, *)
     public func variableValueMode(_ variableValueMode: NSUISymbolVariableValueMode) -> Self {
-        return .init(name: name, configuration: configuration.map { $0.applying(NSUISymbolConfiguration(variableValueMode: variableValueMode)) }, variableValue: variableValue)
+        applyingConfiguration(NSUISymbolConfiguration(variableValueMode: variableValueMode))
     }
 
     @available(macOS 26.0, iOS 26.0, tvOS 26.0, watchOS 26.0, visionOS 26.0, *)
     public func colorRenderingMode(_ colorRenderingMode: NSUISymbolColorRenderingMode) -> Self {
-        return .init(name: name, configuration: configuration.map { $0.applying(NSUISymbolConfiguration(colorRenderingMode: colorRenderingMode)) }, variableValue: variableValue)
+        applyingConfiguration(NSUISymbolConfiguration(colorRenderingMode: colorRenderingMode))
+    }
+
+    @available(macOS 12.0, *)
+    private func applyingConfiguration(_ otherConfiguration: NSUISymbolConfiguration) -> Self {
+        .init(name: name, configuration: configuration.map { $0.applying(otherConfiguration) } ?? otherConfiguration, variableValue: variableValue)
     }
 }
 
