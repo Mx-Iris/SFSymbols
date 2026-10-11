@@ -170,7 +170,7 @@ public struct SFSymbols {
     }
     #endif
 
-    @available(macOS 12.0, iOS 15.0, tvOS 15.0, watchOS 9.0, *)
+    @available(macOS 12.0, iOS 15.0, tvOS 15.0, watchOS 8.0, *)
     public func preferringMulticolor() -> Self {
         applyingConfiguration(NSUISymbolConfiguration.preferringMulticolor())
     }
@@ -230,7 +230,7 @@ extension SFSymbols {
         }
 
         guard let image else {
-            fatalError("Internal Error, check the Name enum for spelling errors")
+            fatalError(missingImageMessage)
         }
 
         return image
@@ -254,13 +254,18 @@ extension SFSymbols {
         }
 
         guard let image else {
-            fatalError("Internal Error, check the Name enum for spelling errors")
+            fatalError(missingImageMessage)
         }
 
         return image
     }
 
     #endif
+
+    private var missingImageMessage: String {
+        let location = name is SystemSymbolName ? "the system symbol set" : "\(name.bundle ?? .main)"
+        return "Symbol image \"\(name.rawValue)\" could not be loaded from \(location)"
+    }
 
     #if canImport(SwiftUI) && SFSYMBOLS_SWIFTUI
 

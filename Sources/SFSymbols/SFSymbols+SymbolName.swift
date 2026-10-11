@@ -1,6 +1,6 @@
 import Foundation
 
-@available(*, deprecated, renamed: "SFSymbol.SymbolName", message: "Use SFSymbol.SymbolName")
+@available(*, deprecated, renamed: "SFSymbols.SymbolName", message: "Use SFSymbols.SymbolName")
 public typealias SymbolName = SFSymbols.SymbolName
 
 extension SFSymbols {
