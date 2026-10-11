@@ -336,7 +336,11 @@ extension NSUIImage {
 
 extension Image {
     public init(name: SFSymbols.SymbolName) {
-        self.init(name.rawValue, bundle: name.bundle)
+        if name is SFSymbols.SystemSymbolName {
+            self.init(systemName: name.rawValue)
+        } else {
+            self.init(name.rawValue, bundle: name.bundle)
+        }
     }
 
     public init(systemName: SFSymbols.SystemSymbolName) {

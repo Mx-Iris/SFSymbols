@@ -24,7 +24,10 @@ let package = Package(
         ),
         .testTarget(
             name: "SFSymbolsTests",
-            dependencies: ["SFSymbols"]
+            dependencies: ["SFSymbols"],
+            swiftSettings: [
+                .define("SFSYMBOLS_SWIFTUI", .when(traits: ["SwiftUI"])),
+            ]
         ),
     ],
 )
