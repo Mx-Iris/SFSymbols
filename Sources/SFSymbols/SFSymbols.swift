@@ -192,7 +192,7 @@ public struct SFSymbols {
 }
 
 extension SFSymbols {
-    public var nsuiImgae: NSUIImage {
+    public var nsuiImage: NSUIImage {
         #if canImport(AppKit) && os(macOS)
         return nsImage
         #elseif canImport(UIKit)
@@ -200,6 +200,11 @@ extension SFSymbols {
         #else
         fatalError("Unsupported Platform")
         #endif
+    }
+
+    @available(*, deprecated, renamed: "nsuiImage")
+    public var nsuiImgae: NSUIImage {
+        nsuiImage
     }
 
     #if canImport(AppKit) && os(macOS)
@@ -284,51 +289,51 @@ extension SFSymbols: View {
 
 extension NSUIImage {
     public static func symbol(name: SFSymbols.SymbolName) -> NSUIImage {
-        SFSymbols(name: name).nsuiImgae
+        SFSymbols(name: name).nsuiImage
     }
 
     public static func symbol(name: SFSymbols.SymbolName, pointSize: CGFloat, weight: NSUISymbolWeight) -> NSUIImage {
-        SFSymbols(name: name, pointSize: pointSize, weight: weight).nsuiImgae
+        SFSymbols(name: name, pointSize: pointSize, weight: weight).nsuiImage
     }
 
     public static func symbol(name: SFSymbols.SymbolName, pointSize: CGFloat, weight: NSUISymbolWeight, scale: NSUISymbolScale?) -> NSUIImage {
-        SFSymbols(name: name, pointSize: pointSize, weight: weight, scale: scale).nsuiImgae
+        SFSymbols(name: name, pointSize: pointSize, weight: weight, scale: scale).nsuiImage
     }
 
     public static func symbol(name: SFSymbols.SymbolName, textStyle: NSUISymbolTextStyle) -> NSUIImage {
-        SFSymbols(name: name, textStyle: textStyle).nsuiImgae
+        SFSymbols(name: name, textStyle: textStyle).nsuiImage
     }
 
     public static func symbol(name: SFSymbols.SymbolName, scale: NSUISymbolScale) -> NSUIImage {
-        SFSymbols(name: name, scale: scale).nsuiImgae
+        SFSymbols(name: name, scale: scale).nsuiImage
     }
 
     public static func symbol(name: SFSymbols.SymbolName, textStyle: NSUISymbolTextStyle?, scale: NSUISymbolScale?) -> NSUIImage {
-        SFSymbols(name: name, textStyle: textStyle, scale: scale).nsuiImgae
+        SFSymbols(name: name, textStyle: textStyle, scale: scale).nsuiImage
     }
 
     public static func symbol(systemName: SFSymbols.SystemSymbolName) -> NSUIImage {
-        SFSymbols(systemName: systemName).nsuiImgae
+        SFSymbols(systemName: systemName).nsuiImage
     }
 
     public static func symbol(systemName: SFSymbols.SystemSymbolName, pointSize: CGFloat, weight: NSUISymbolWeight) -> NSUIImage {
-        SFSymbols(systemName: systemName, pointSize: pointSize, weight: weight).nsuiImgae
+        SFSymbols(systemName: systemName, pointSize: pointSize, weight: weight).nsuiImage
     }
 
     public static func symbol(systemName: SFSymbols.SystemSymbolName, pointSize: CGFloat, weight: NSUISymbolWeight, scale: NSUISymbolScale?) -> NSUIImage {
-        SFSymbols(systemName: systemName, pointSize: pointSize, weight: weight, scale: scale).nsuiImgae
+        SFSymbols(systemName: systemName, pointSize: pointSize, weight: weight, scale: scale).nsuiImage
     }
 
     public static func symbol(systemName: SFSymbols.SystemSymbolName, textStyle: NSUISymbolTextStyle) -> NSUIImage {
-        SFSymbols(systemName: systemName, textStyle: textStyle).nsuiImgae
+        SFSymbols(systemName: systemName, textStyle: textStyle).nsuiImage
     }
 
     public static func symbol(systemName: SFSymbols.SystemSymbolName, scale: NSUISymbolScale) -> NSUIImage {
-        SFSymbols(systemName: systemName, scale: scale).nsuiImgae
+        SFSymbols(systemName: systemName, scale: scale).nsuiImage
     }
 
     public static func symbol(systemName: SFSymbols.SystemSymbolName, textStyle: NSUISymbolTextStyle?, scale: NSUISymbolScale?) -> NSUIImage {
-        SFSymbols(systemName: systemName, textStyle: textStyle, scale: scale).nsuiImgae
+        SFSymbols(systemName: systemName, textStyle: textStyle, scale: scale).nsuiImage
     }
 }
 

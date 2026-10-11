@@ -72,3 +72,17 @@ struct ConfigurationModifierTests {
         try NSKeyedArchiver.archivedData(withRootObject: configuration, requiringSecureCoding: true)
     }
 }
+
+@Suite("Platform images")
+struct PlatformImageTests {
+    @Test("nsuiImage is the platform image of the symbol")
+    func crossPlatformImageIsPlatformSymbolImage() throws {
+        #if canImport(AppKit) && os(macOS)
+        let platformImage = try #require(NSImage(systemSymbolName: "star", accessibilityDescription: nil))
+        #elseif canImport(UIKit)
+        let platformImage = try #require(UIImage(systemName: "star"))
+        #endif
+
+        #expect(SFSymbols(systemName: .star).nsuiImage.size == platformImage.size)
+    }
+}
