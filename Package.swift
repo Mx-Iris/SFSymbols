@@ -38,5 +38,17 @@ let package = Package(
                 .define("SFSYMBOLS_PRIVATE", .when(traits: ["PrivateSymbols"])),
             ]
         ),
+        .plugin(
+            name: "GenerateSymbolNames",
+            capability: .command(
+                intent: .custom(
+                    verb: "generate-symbol-names",
+                    description: "Regenerate the public and private symbol name constants from the SF Symbols app and the running macOS"
+                ),
+                permissions: [
+                    .writeToPackageDirectory(reason: "Writes the generated symbol name constants into Sources/SFSymbols"),
+                ]
+            )
+        ),
     ],
 )

@@ -8,6 +8,10 @@
 
 - [私有 SF Symbols](Guides/PrivateSymbols.md) —— 打开 `PrivateSymbols` trait 加载系统的私有符号：用法、取不到就崩溃的契约、App Store 审核风险。
 
+## 实现说明
+
+- [名字常量的生成](Internal/SymbolNameGeneration.md) —— 命令插件 `GenerateSymbolNames` 怎么运行、为什么用包内的命令插件、重新生成时会踩的坑。
+
 ## 提案
 
 - [Evolutions](Evolutions/README.md) —— 提案索引与状态表。

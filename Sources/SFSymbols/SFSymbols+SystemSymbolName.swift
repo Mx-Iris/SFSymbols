@@ -1,14 +1,3 @@
-import Foundation
-
-extension SFSymbols {
-    public struct SystemSymbolName: RawRepresentable, Hashable, Sendable, SymbolName {
-        public let rawValue: String
-        public init(rawValue: String) {
-            self.rawValue = rawValue
-        }
-    }
-}
-
 extension SFSymbols.SystemSymbolName {
 
     /// SF Symbols's name：0.circle

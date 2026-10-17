@@ -4,7 +4,7 @@
 - **创建日期**: 2026-10-17
 - **最后更新**: 2026-10-17
 - **实现分支 / PR**: `feature/private-system-symbols`
-- **配套文档**: [使用指南：私有 SF Symbols](../Guides/PrivateSymbols.md)
+- **配套文档**: [使用指南：私有 SF Symbols](../Guides/PrivateSymbols.md)、[实现说明：名字常量的生成](../Internal/SymbolNameGeneration.md)
 
 ## 摘要
 
@@ -30,7 +30,7 @@
 - 同时打开 `SwiftUI` trait 时，新增 `Image(privateSystemName:)`；`Image(name:)` 遇到私有名字也会走 `Image(_internalSystemName:)`。iOS 13、tvOS 13、watchOS 6 上没有这个初始化方法，退回 `Image(uiImage:)`。
 - `nsImage` / `uiImage` 的取图逻辑抽成一个私有属性，开头加一个分支：名字是私有的就走私有工厂。配置修饰、variableValue，以及取不到图时 `fatalError`，都与公共符号的行为一致。
 
-**名字常量**：在 `Scripts/` 下新增生成脚本。它读本机私有 bundle 的 `name_availability.plist`，生成 `Sources/SFSymbols/SFSymbols+PrivateSystemSymbolName.swift`，整个文件包在 `#if SFSYMBOLS_PRIVATE` 里。生成文件只放常量（`extension SFSymbols.PrivateSystemSymbolName`），类型本身写在手写的源文件里。排序、驼峰命名、`@available` 的规则都沿用公共清单的生成器（SFSymbolsGenerator 的 struct 模式）。Swift 关键字加反引号，因为私有清单里有一个叫 `switch` 的符号。
+**名字常量**：本包新增命令插件 `GenerateSymbolNames`（不进任何 product），在 Xcode 里对本包运行，或用 `swift package --allow-writing-to-package-directory generate-symbol-names`。它一次重新生成两份文件：公共清单读 SF Symbols app 的 `name_availability.plist`，生成 `SFSymbols+SystemSymbolName.swift`；私有清单读本机 `CoreGlyphsPrivate.bundle` 的同名文件，生成 `SFSymbols+PrivateSystemSymbolName.swift`，整个文件包在 `#if SFSYMBOLS_PRIVATE` 里。两份生成文件都只放常量，`SystemSymbolName` 与 `PrivateSystemSymbolName` 的类型定义写在手写的源文件里。排序、驼峰命名、`@available` 的规则沿用原先生成公共清单的 SFSymbolsGenerator（struct 模式）；不同的是所有 Swift 关键字都加反引号，因为私有清单里有一个叫 `switch` 的符号。用法与坑见实现说明 [名字常量的生成](../Internal/SymbolNameGeneration.md)。
 
 **测试**：`swift test --traits PrivateSymbols` 下跑，SwiftUI 部分再加 `SwiftUI` trait，默认跑法不受影响。
 - 先断言公共 API 取不到某个名字，确认它真是私有符号，再断言本库能取到。
@@ -42,15 +42,15 @@
 - 清单只取自 macOS 的私有 bundle，不为各平台分别生成。iOS 等平台的私有符号集合可能不同，个别名字在那里会取不到。
 - 有 71 个名字是未发布产品的 GUID 代号（如 `0828E54B965E418AB42353CA91BFBBEE`），照样生成：规则保持「bundle 里有什么就生成什么」。
 - 无障碍描述与公共路径一样传 nil。
-- 生成脚本写完先给用户看，再运行。
+- 生成插件写完先给用户看，再运行。
 - 新增使用指南 `Documentations/Guides/PrivateSymbols.md`，写三件事：怎么打开 trait、App Store 审核风险、私有名字不受 API 契约保护，随时可能改名或消失。
 
 ## 落地步骤
 
 1. [x] **包结构与 ObjC 工厂**：`Package.swift` 加 trait `PrivateSymbols`、条件依赖的 target `SFSymbolsPrivate` 和 `SFSYMBOLS_PRIVATE`，写好工厂类。验证：默认构建和 `--traits PrivateSymbols` 构建都通过。
 2. [x] **Swift API、测试与使用指南**：`PrivateSystemSymbolName` 类型（这一步还没有常量，测试用 `init(rawValue:)`），`SFSymbols`、`NSUIImage`、SwiftUI `Image` 的入口，`nsImage` / `uiImage` 的取图分支，测试，`Documentations/Guides/PrivateSymbols.md`。验证：macOS 上四种 trait 组合（都不开、只开 `PrivateSymbols`、只开 `SwiftUI`、都开）的 `swift test` 全部通过；iOS、Mac Catalyst、tvOS、watchOS、visionOS 用 `swift build --build-system native --triple` 交叉编译通过（Mac Catalyst 另加 iOSSupport 的搜索路径），不启动模拟器。
-3. [ ] **生成脚本**：`Scripts/GeneratePrivateSystemSymbolNames.swift`。写完交给用户审阅，审阅通过前不运行。（已写好并提交，只做过类型检查，等待审阅）
-4. [ ] **生成名字常量**：运行脚本，提交生成的 `Sources/SFSymbols/SFSymbols+PrivateSystemSymbolName.swift`，测试与指南改用常量。验证同第 2 步。
+3. [ ] **生成插件**：`Plugins/GenerateSymbolNames/`，替换原先的 `Scripts/GeneratePrivateSystemSymbolNames.swift`；`SystemSymbolName` 的类型定义从生成文件挪到 `SFSymbols+SymbolName.swift`；实现说明 `Documentations/Internal/SymbolNameGeneration.md`。写完交给用户审阅，审阅通过前不运行。（已写好并提交，只做过类型检查，等待审阅）
+4. [ ] **生成名字常量**：运行插件，提交两份生成文件，测试与指南改用常量。验证同第 2 步。
 
 ## 决策日志
 
@@ -67,3 +67,6 @@
 | 2026-10-17 | `Image(name:)` 的测试改成「渲染得出图」，不比较两个 `Image` 是否相等 | 两个 `Image` 都由本库同一条路径构造，比较相等只能证明代码与自己一致；渲染结果才是调用方看得到的行为 |
 | 2026-10-17 | Mac Catalyst 的交叉编译手动加 `System/iOSSupport` 下的框架与 Swift 模块搜索路径 | SwiftPM 命令行按 `-macabi` triple 编译时不加这些路径，找不到 `UIKit/UIKit.h`；Xcode 构建会自动加，与代码无关 |
 | 2026-10-17 | 生成脚本用 Swift 写，校验后再写文件：发行年份缺版本、名字转不成合法标识符、两个名字撞成同一个标识符，任一情况都报错退出 | 与公共清单的生成器同一种语言，命名规则可以逐行对照；三项校验让系统新增的怪名字直接暴露，而不是生成出编译不过的文件 |
+| 2026-10-17 | 名字常量改由本包的命令插件 `GenerateSymbolNames` 生成，公共、私有两份一起生成；删掉 `Scripts/` 下的脚本 | 用户原话：「我public符号生成是用这个生成的，你把它改造一下，支持Private Symbol，然后再写一个Plugin，可以在Xcode上运行并自动生成代码」「如果这个库没有帮助你也可以自己写一个」。没有改造 SFSymbolsGenerator：它的 fork 停在 v1.1.0，输出旧类型名 `SFSymbol`，每次生成后都要手改；作为插件依赖还会给 SFSymbols 加一个包依赖（连带 swift-argument-parser）。本包的插件不进 product，使用方看不到它，也不用解析它 |
+| 2026-10-17 | 用命令插件，不用构建插件 | 构建插件会在每个使用方的每次构建里读本机的 SF Symbols app 和系统私有 bundle，结果随机器而变，没装 app 的机器（比如 CI）直接构建失败 |
+| 2026-10-17 | `SystemSymbolName` 的类型定义从生成文件挪到手写的 `SFSymbols+SymbolName.swift`，两份生成文件都只放常量 | 生成文件里只有生成的内容，重新生成不会冲掉手写的代码，两份文件也能共用一个模板 |

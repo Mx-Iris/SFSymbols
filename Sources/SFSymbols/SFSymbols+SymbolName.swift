@@ -13,3 +13,12 @@ extension SFSymbols {
 extension SFSymbols.SymbolName {
     public var bundle: Bundle? { nil }
 }
+
+extension SFSymbols {
+    public struct SystemSymbolName: RawRepresentable, Hashable, Sendable, SymbolName {
+        public let rawValue: String
+        public init(rawValue: String) {
+            self.rawValue = rawValue
+        }
+    }
+}
