@@ -16,8 +16,8 @@
 ```swift
 import SFSymbols
 
-let image = SFSymbols(privateSystemName: .init(rawValue: "persona"), pointSize: 20, weight: .bold).nsuiImage
-let sameImage = NSUIImage.symbol(privateSystemName: .init(rawValue: "persona"), pointSize: 20, weight: .bold)
+let image = SFSymbols(privateSystemName: .airdrop, pointSize: 20, weight: .bold).nsuiImage
+let sameImage = NSUIImage.symbol(privateSystemName: .airdrop, pointSize: 20, weight: .bold)
 ```
 
 ```swift
@@ -27,7 +27,7 @@ import SFSymbols
 struct AirDropLabel: View {
     var body: some View {
         HStack {
-            Image(privateSystemName: .init(rawValue: "airdrop"))
+            Image(privateSystemName: .airdrop)
             Text("AirDrop")
         }
     }
@@ -38,6 +38,7 @@ struct AirDropLabel: View {
 
 - **私有符号**：放在 `/System/Library/CoreServices/CoreGlyphsPrivate.bundle` 里的符号，macOS 27.2 上有 1902 个，例如 `airdrop`、`persona`。SF Symbols app 不列出它们；`NSImage(systemSymbolName:)`、`UIImage(systemName:)` 返回 nil，`Image(systemName:)` 画出空图。
 - **`SFSymbols.PrivateSystemSymbolName`** 与 `SystemSymbolName` 平行，入口一一对应：`SFSymbols(privateSystemName:…)`、`NSUIImage.symbol(privateSystemName:…)`、SwiftUI 的 `Image(privateSystemName:)`。`Image(name:)` 收到私有名字时，也按私有符号处理。
+- **名字常量**：`PrivateSystemSymbolName` 上为每个私有名字生成了一个常量（`.airdrop`、`.persona`……），带 `@available`，标明这个名字从哪个系统版本开始出现。清单里没有的名字用 `PrivateSystemSymbolName(rawValue:)`。
 - **取图走系统的私有方法**：macOS 上是 `+[NSImage imageWithPrivateSystemSymbolName:accessibilityDescription:]`，iOS、tvOS、watchOS、visionOS、Mac Catalyst 上是 `+[UIImage _systemImageNamed:withConfiguration:]`，SwiftUI 用 `Image(_internalSystemName:)`。它们都先查公共符号集，查不到再查私有符号集，所以公共名字放进 `PrivateSystemSymbolName` 也能取到。
 - **不开 trait 就没有这一切**：`SFSymbolsPrivate` 不会被编译进使用方，二进制里没有任何私有方法名，其余 API 的行为与不支持私有符号时完全一样。
 
@@ -48,7 +49,7 @@ struct AirDropLabel: View {
 SwiftUI 的 `Image(privateSystemName:)` 在 iOS 14、macOS 11、tvOS 14、watchOS 7 起取不到时只是画出空图，不崩溃；更早的系统上它退回 `Image(uiImage:)`，取不到照样崩溃。
 
 **私有名字不受任何 API 契约保护。**
-任何系统版本都可能把它改名或删掉，届时上一条的崩溃就会出现在用户手里。依赖的私有名字要在每个新系统上重新确认。
+任何系统版本都可能把它改名或删掉，届时上一条的崩溃就会出现在用户手里。常量上的 `@available` 只说明名字从哪个版本开始有，不保证以后还在。依赖的私有名字要在每个新系统上重新确认。
 
 **上架 App Store 的 App 不要打开这个 trait。**
 打开后，二进制里会出现 `imageWithPrivateSystemSymbolName:accessibilityDescription:`、`_systemImageNamed:withConfiguration:` 这类私有方法名，App Store 的审核可能因此拒审。适合在 App Store 之外分发的 App（Developer ID 签名、内部工具）里用。

@@ -2,7 +2,7 @@
 
 - **状态**: In Progress
 - **创建日期**: 2026-10-17
-- **最后更新**: 2026-10-17
+- **最后更新**: 2026-10-18
 - **实现分支 / PR**: `feature/private-system-symbols`
 - **配套文档**: [使用指南：私有 SF Symbols](../Guides/PrivateSymbols.md)、[实现说明：名字常量的生成](../Internal/SymbolNameGeneration.md)
 
@@ -49,8 +49,8 @@
 
 1. [x] **包结构与 ObjC 工厂**：`Package.swift` 加 trait `PrivateSymbols`、条件依赖的 target `SFSymbolsPrivate` 和 `SFSYMBOLS_PRIVATE`，写好工厂类。验证：默认构建和 `--traits PrivateSymbols` 构建都通过。
 2. [x] **Swift API、测试与使用指南**：`PrivateSystemSymbolName` 类型（这一步还没有常量，测试用 `init(rawValue:)`），`SFSymbols`、`NSUIImage`、SwiftUI `Image` 的入口，`nsImage` / `uiImage` 的取图分支，测试，`Documentations/Guides/PrivateSymbols.md`。验证：macOS 上四种 trait 组合（都不开、只开 `PrivateSymbols`、只开 `SwiftUI`、都开）的 `swift test` 全部通过；iOS、Mac Catalyst、tvOS、watchOS、visionOS 用 `swift build --build-system native --triple` 交叉编译通过（Mac Catalyst 另加 iOSSupport 的搜索路径），不启动模拟器。
-3. [ ] **生成插件**：`Plugins/GenerateSymbolNames/`，替换原先的 `Scripts/GeneratePrivateSystemSymbolNames.swift`；`SystemSymbolName` 的类型定义从生成文件挪到 `SFSymbols+SymbolName.swift`；实现说明 `Documentations/Internal/SymbolNameGeneration.md`。写完交给用户审阅，审阅通过前不运行。（已写好并提交，只做过类型检查，等待审阅）
-4. [ ] **生成名字常量**：运行插件，提交两份生成文件，测试与指南改用常量。验证同第 2 步。
+3. [x] **生成插件**：`Plugins/GenerateSymbolNames/`，替换原先的 `Scripts/GeneratePrivateSystemSymbolNames.swift`；`SystemSymbolName` 的类型定义从生成文件挪到 `SFSymbols+SymbolName.swift`；实现说明 `Documentations/Internal/SymbolNameGeneration.md`。写完交给用户审阅，审阅通过前不运行。
+4. [x] **生成名字常量**：运行插件，提交两份生成文件，测试与指南改用常量。验证同第 2 步。
 
 ## 决策日志
 
@@ -70,3 +70,6 @@
 | 2026-10-17 | 名字常量改由本包的命令插件 `GenerateSymbolNames` 生成，公共、私有两份一起生成；删掉 `Scripts/` 下的脚本 | 用户原话：「我public符号生成是用这个生成的，你把它改造一下，支持Private Symbol，然后再写一个Plugin，可以在Xcode上运行并自动生成代码」「如果这个库没有帮助你也可以自己写一个」。没有改造 SFSymbolsGenerator：它的 fork 停在 v1.1.0，输出旧类型名 `SFSymbol`，每次生成后都要手改；作为插件依赖还会给 SFSymbols 加一个包依赖（连带 swift-argument-parser）。本包的插件不进 product，使用方看不到它，也不用解析它 |
 | 2026-10-17 | 用命令插件，不用构建插件 | 构建插件会在每个使用方的每次构建里读本机的 SF Symbols app 和系统私有 bundle，结果随机器而变，没装 app 的机器（比如 CI）直接构建失败 |
 | 2026-10-17 | `SystemSymbolName` 的类型定义从生成文件挪到手写的 `SFSymbols+SymbolName.swift`，两份生成文件都只放常量 | 生成文件里只有生成的内容，重新生成不会冲掉手写的代码，两份文件也能共用一个模板 |
+| 2026-10-18 | 插件忽略 `--target` 参数，其他不认识的参数照样报错 | 用户在 Xcode 里运行插件，报「Unknown arguments: --target SFSymbolsTests --target SFSymbols」：Xcode 会把对话框里选中的 target 传进来，而插件把不认识的参数都当错误。插件只生成 SFSymbols 一个 target，选了哪些不影响结果。用同样的参数在命令行复现了报错，修复后同一条命令通过 |
+| 2026-10-18 | 公共清单随第一次运行更新到 SF Symbols 27.0（多 340 个名字、没有删除），单独一个提交 | 插件按设计一次生成两份。用户没有明确回答要不要放进本分支，但已在 Xcode 里直接运行插件；单独成一个提交，不要时撤掉这一个即可 |
+| 2026-10-18 | 实现完成，待合并 | 四个落地步骤都已完成；验证同第 2 步，全部通过 |

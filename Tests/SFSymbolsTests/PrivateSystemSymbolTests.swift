@@ -25,7 +25,7 @@ struct PrivateSystemSymbolTests {
     @Test("A configuration modifier takes effect on a private symbol")
     @available(macOS 12.0, *)
     func configurationModifierTakesEffect() {
-        let symbol = SFSymbols(privateSystemName: .init(rawValue: "airdrop"))
+        let symbol = SFSymbols(privateSystemName: .airdrop)
 
         #expect(symbol.pointSize(64, weight: .regular).nsuiImage.size.height > symbol.nsuiImage.size.height)
     }
@@ -33,7 +33,7 @@ struct PrivateSystemSymbolTests {
     @Test("A private symbol with a variable value loads")
     @available(macOS 13.0, iOS 16.0, tvOS 16.0, watchOS 9.0, *)
     func loadsWithVariableValue() {
-        let image = SFSymbols(privateSystemName: .init(rawValue: "airdrop")).variableValue(0.5).nsuiImage
+        let image = SFSymbols(privateSystemName: .airdrop).variableValue(0.5).nsuiImage
 
         #expect(image.size.width > 0 && image.size.height > 0)
     }
@@ -69,7 +69,7 @@ struct PrivateSystemSymbolSwiftUITests {
     func privateSystemNameDrawsSymbol() throws {
         try #require(renderedImage(of: Image(systemName: "airdrop")) == nil, "Image(systemName:) draws airdrop, so it proves nothing")
 
-        #expect(renderedImage(of: Image(privateSystemName: .init(rawValue: "airdrop"))) != nil)
+        #expect(renderedImage(of: Image(privateSystemName: .airdrop)) != nil)
     }
 
     @Test("Image(privateSystemName:) draws nothing, without stopping the process, for a name the private symbol set lacks")
@@ -81,7 +81,7 @@ struct PrivateSystemSymbolSwiftUITests {
     @Test("Image(name:) draws a private system symbol name as the private symbol")
     @available(macOS 13.0, iOS 16.0, tvOS 16.0, watchOS 9.0, *)
     func nameDrawsPrivateSymbol() {
-        let name = SFSymbols(privateSystemName: .init(rawValue: "airdrop")).name
+        let name = SFSymbols(privateSystemName: .airdrop).name
 
         #expect(renderedImage(of: Image(name: name)) != nil)
     }
