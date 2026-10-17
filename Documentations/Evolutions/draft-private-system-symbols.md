@@ -49,7 +49,7 @@
 
 1. [x] **包结构与 ObjC 工厂**：`Package.swift` 加 trait `PrivateSymbols`、条件依赖的 target `SFSymbolsPrivate` 和 `SFSYMBOLS_PRIVATE`，写好工厂类。验证：默认构建和 `--traits PrivateSymbols` 构建都通过。
 2. [x] **Swift API、测试与使用指南**：`PrivateSystemSymbolName` 类型（这一步还没有常量，测试用 `init(rawValue:)`），`SFSymbols`、`NSUIImage`、SwiftUI `Image` 的入口，`nsImage` / `uiImage` 的取图分支，测试，`Documentations/Guides/PrivateSymbols.md`。验证：macOS 上四种 trait 组合（都不开、只开 `PrivateSymbols`、只开 `SwiftUI`、都开）的 `swift test` 全部通过；iOS、Mac Catalyst、tvOS、watchOS、visionOS 用 `swift build --build-system native --triple` 交叉编译通过（Mac Catalyst 另加 iOSSupport 的搜索路径），不启动模拟器。
-3. [ ] **生成脚本**：`Scripts/GeneratePrivateSystemSymbolNames.swift`。写完交给用户审阅，审阅通过前不运行。
+3. [ ] **生成脚本**：`Scripts/GeneratePrivateSystemSymbolNames.swift`。写完交给用户审阅，审阅通过前不运行。（已写好并提交，只做过类型检查，等待审阅）
 4. [ ] **生成名字常量**：运行脚本，提交生成的 `Sources/SFSymbols/SFSymbols+PrivateSystemSymbolName.swift`，测试与指南改用常量。验证同第 2 步。
 
 ## 决策日志
@@ -66,3 +66,4 @@
 | 2026-10-17 | UIKit 平台的交叉编译改用 `--build-system native` | Xcode 27.2 默认的构建系统 swiftbuild 只接受 iOS 15 起的部署目标，本包声明的是 iOS 13，直接报错。这是包现有的问题，与本提案无关；native 构建系统按 iOS 13 照常编译 |
 | 2026-10-17 | `Image(name:)` 的测试改成「渲染得出图」，不比较两个 `Image` 是否相等 | 两个 `Image` 都由本库同一条路径构造，比较相等只能证明代码与自己一致；渲染结果才是调用方看得到的行为 |
 | 2026-10-17 | Mac Catalyst 的交叉编译手动加 `System/iOSSupport` 下的框架与 Swift 模块搜索路径 | SwiftPM 命令行按 `-macabi` triple 编译时不加这些路径，找不到 `UIKit/UIKit.h`；Xcode 构建会自动加，与代码无关 |
+| 2026-10-17 | 生成脚本用 Swift 写，校验后再写文件：发行年份缺版本、名字转不成合法标识符、两个名字撞成同一个标识符，任一情况都报错退出 | 与公共清单的生成器同一种语言，命名规则可以逐行对照；三项校验让系统新增的怪名字直接暴露，而不是生成出编译不过的文件 |
