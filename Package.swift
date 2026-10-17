@@ -14,19 +14,28 @@ let package = Package(
     ],
     traits: [
         .trait(name: "SwiftUI", description: "Enable SwiftUI support including View conformance and Image extensions"),
+        .trait(name: "PrivateSymbols", description: "Enable the private system symbols that ship with the OS, loaded through private AppKit and UIKit API"),
     ],
     targets: [
         .target(
             name: "SFSymbols",
+            dependencies: [
+                .target(name: "SFSymbolsPrivate", condition: .when(traits: ["PrivateSymbols"])),
+            ],
             swiftSettings: [
                 .define("SFSYMBOLS_SWIFTUI", .when(traits: ["SwiftUI"])),
+                .define("SFSYMBOLS_PRIVATE", .when(traits: ["PrivateSymbols"])),
             ]
+        ),
+        .target(
+            name: "SFSymbolsPrivate"
         ),
         .testTarget(
             name: "SFSymbolsTests",
             dependencies: ["SFSymbols"],
             swiftSettings: [
                 .define("SFSYMBOLS_SWIFTUI", .when(traits: ["SwiftUI"])),
+                .define("SFSYMBOLS_PRIVATE", .when(traits: ["PrivateSymbols"])),
             ]
         ),
     ],

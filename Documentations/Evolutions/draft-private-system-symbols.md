@@ -1,6 +1,6 @@
 # Draft - 私有 SF Symbols 支持
 
-- **状态**: Accepted
+- **状态**: In Progress
 - **创建日期**: 2026-10-17
 - **最后更新**: 2026-10-17
 - **实现分支 / PR**: `feature/private-system-symbols`
@@ -46,8 +46,8 @@
 
 ## 落地步骤
 
-1. [ ] **包结构与 ObjC 工厂**：`Package.swift` 加 trait `PrivateSymbols`、条件依赖的 target `SFSymbolsPrivate` 和 `SFSYMBOLS_PRIVATE`，写好工厂类。验证：默认构建和 `--traits PrivateSymbols` 构建都通过。
-2. [ ] **Swift API、测试与使用指南**：`PrivateSystemSymbolName` 类型（这一步还没有常量，测试用 `init(rawValue:)`），`SFSymbols`、`NSUIImage`、SwiftUI `Image` 的入口，`nsImage` / `uiImage` 的取图分支，测试，`Documentations/Guides/PrivateSymbols.md`。验证：macOS 上四种 trait 组合（都不开、只开 `PrivateSymbols`、只开 `SwiftUI`、都开）的 `swift test` 全部通过；iOS、Mac Catalyst、tvOS、watchOS、visionOS 用 `swift build --triple` 交叉编译通过，不启动模拟器。
+1. [x] **包结构与 ObjC 工厂**：`Package.swift` 加 trait `PrivateSymbols`、条件依赖的 target `SFSymbolsPrivate` 和 `SFSYMBOLS_PRIVATE`，写好工厂类。验证：默认构建和 `--traits PrivateSymbols` 构建都通过。
+2. [ ] **Swift API、测试与使用指南**：`PrivateSystemSymbolName` 类型（这一步还没有常量，测试用 `init(rawValue:)`），`SFSymbols`、`NSUIImage`、SwiftUI `Image` 的入口，`nsImage` / `uiImage` 的取图分支，测试，`Documentations/Guides/PrivateSymbols.md`。验证：macOS 上四种 trait 组合（都不开、只开 `PrivateSymbols`、只开 `SwiftUI`、都开）的 `swift test` 全部通过；iOS、Mac Catalyst、tvOS、watchOS、visionOS 用 `swift build --build-system native --triple` 交叉编译通过，不启动模拟器。
 3. [ ] **生成脚本**：`Scripts/GeneratePrivateSystemSymbolNames.swift`。写完交给用户审阅，审阅通过前不运行。
 4. [ ] **生成名字常量**：运行脚本，提交生成的 `Sources/SFSymbols/SFSymbols+PrivateSystemSymbolName.swift`，测试与指南改用常量。验证同第 2 步。
 
@@ -60,3 +60,6 @@
 | 2026-10-17 | 生成私有名字常量 | 用户选定。否决了只提供 `rawValue` 写法：没有自动补全，不符合本库「类型化名字」的定位 |
 | 2026-10-17 | 拆出四个落地步骤；`PrivateSystemSymbolName` 类型写在手写文件里，生成文件只放常量 | 生成脚本要先给用户审阅才能运行。类型与常量分开，前两步不依赖生成结果，可以先实现、先验证 |
 | 2026-10-17 | 用户批准，开始实现 | 状态改为 Accepted |
+| 2026-10-17 | 状态改为 In Progress，在 `feature/private-system-symbols` 上实现 | — |
+| 2026-10-17 | 带 variableValue 的私有方法不存在时，退回不带 variableValue 的私有方法，不返回 nil | 照搬 PrivateSymbols 的 `PSSymbolImageFactory`。符号照常显示，只是没有 variableValue；不至于因为少一个可选效果就崩溃 |
+| 2026-10-17 | UIKit 平台的交叉编译改用 `--build-system native` | Xcode 27.2 默认的构建系统 swiftbuild 只接受 iOS 15 起的部署目标，本包声明的是 iOS 13，直接报错。这是包现有的问题，与本提案无关；native 构建系统按 iOS 13 照常编译 |

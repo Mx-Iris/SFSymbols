@@ -7,4 +7,4 @@
 ## 提案
 
 - [Evolutions](Evolutions/README.md) —— 提案索引与状态表。
-  - [私有 SF Symbols 支持](Evolutions/draft-private-system-symbols.md)（Accepted）
+  - [私有 SF Symbols 支持](Evolutions/draft-private-system-symbols.md)（In Progress）

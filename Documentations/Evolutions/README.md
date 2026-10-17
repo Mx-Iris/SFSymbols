@@ -12,4 +12,4 @@ SPM library product，使用方以源码依赖并重新编译，未开启 librar
 
 | # | 标题 | 状态 | 摘要 |
 |---|------|------|------|
-| draft | [私有 SF Symbols 支持](draft-private-system-symbols.md) | Accepted | 在新 trait `PrivateSymbols`（默认关闭）下加入私有符号：生成的 `PrivateSystemSymbolName` 常量、`SFSymbols` / `NSUIImage` / SwiftUI `Image` 的入口，经 ObjC target `SFSymbolsPrivate` 调用 AppKit / UIKit 的私有工厂方法。 |
+| draft | [私有 SF Symbols 支持](draft-private-system-symbols.md) | In Progress | 在新 trait `PrivateSymbols`（默认关闭）下加入私有符号：生成的 `PrivateSystemSymbolName` 常量、`SFSymbols` / `NSUIImage` / SwiftUI `Image` 的入口，经 ObjC target `SFSymbolsPrivate` 调用 AppKit / UIKit 的私有工厂方法。 |
