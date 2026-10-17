@@ -4,6 +4,10 @@
 
 > **项目类型：库（源码分发）**。SPM library product，使用方每次重新编译，无 ABI 约束，但源码兼容性必须评估。
 
+## 使用指南
+
+- [私有 SF Symbols](Guides/PrivateSymbols.md) —— 打开 `PrivateSymbols` trait 加载系统的私有符号：用法、取不到就崩溃的契约、App Store 审核风险。
+
 ## 提案
 
 - [Evolutions](Evolutions/README.md) —— 提案索引与状态表。

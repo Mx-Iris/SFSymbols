@@ -209,7 +209,27 @@ extension SFSymbols {
 
     #if canImport(AppKit) && os(macOS)
     public var nsImage: NSImage {
-        var image = if let variableValue, #available(macOS 13.0, *) {
+        var image = loadedImage
+
+        if let configuration {
+            image = image?.withSymbolConfiguration(configuration)
+        }
+
+        guard let image else {
+            fatalError(missingImageMessage)
+        }
+
+        return image
+    }
+
+    private var loadedImage: NSImage? {
+        #if SFSYMBOLS_PRIVATE
+        if name is PrivateSystemSymbolName {
+            return loadedPrivateSystemSymbolImage
+        }
+        #endif
+
+        return if let variableValue, #available(macOS 13.0, *) {
             if name is SystemSymbolName {
                 NSImage(systemSymbolName: name.rawValue, variableValue: variableValue, accessibilityDescription: nil)
             } else {
@@ -224,22 +244,26 @@ extension SFSymbols {
                 NSImage(named: name.rawValue)
             }
         }
+    }
 
-        if let configuration {
-            image = image?.withSymbolConfiguration(configuration)
-        }
+    #elseif canImport(UIKit)
 
-        guard let image else {
+    public var uiImage: UIImage {
+        guard let image = loadedImage else {
             fatalError(missingImageMessage)
         }
 
         return image
     }
 
-    #elseif canImport(UIKit)
+    private var loadedImage: UIImage? {
+        #if SFSYMBOLS_PRIVATE
+        if name is PrivateSystemSymbolName {
+            return loadedPrivateSystemSymbolImage
+        }
+        #endif
 
-    public var uiImage: UIImage {
-        let image = if let variableValue, #available(iOS 16.0, watchOS 9.0, tvOS 16.0, *) {
+        return if let variableValue, #available(iOS 16.0, watchOS 9.0, tvOS 16.0, *) {
             if name is SystemSymbolName {
                 UIImage(systemName: name.rawValue, variableValue: variableValue, configuration: configuration)
             } else {
@@ -252,19 +276,22 @@ extension SFSymbols {
                 UIImage(named: name.rawValue, in: name.bundle, with: configuration)
             }
         }
-
-        guard let image else {
-            fatalError(missingImageMessage)
-        }
-
-        return image
     }
 
     #endif
 
     private var missingImageMessage: String {
-        let location = name is SystemSymbolName ? "the system symbol set" : "\(name.bundle ?? .main)"
-        return "Symbol image \"\(name.rawValue)\" could not be loaded from \(location)"
+        "Symbol image \"\(name.rawValue)\" could not be loaded from \(imageLocation)"
+    }
+
+    private var imageLocation: String {
+        #if SFSYMBOLS_PRIVATE
+        if name is PrivateSystemSymbolName {
+            return "the private system symbol set"
+        }
+        #endif
+
+        return name is SystemSymbolName ? "the system symbol set" : "\(name.bundle ?? .main)"
     }
 
     #if canImport(SwiftUI) && SFSYMBOLS_SWIFTUI
@@ -346,6 +373,13 @@ extension NSUIImage {
 
 extension Image {
     public init(name: SFSymbols.SymbolName) {
+        #if SFSYMBOLS_PRIVATE
+        if let privateSystemName = name as? SFSymbols.PrivateSystemSymbolName {
+            self.init(privateSystemName: privateSystemName)
+            return
+        }
+        #endif
+
         if name is SFSymbols.SystemSymbolName {
             self.init(systemName: name.rawValue)
         } else {

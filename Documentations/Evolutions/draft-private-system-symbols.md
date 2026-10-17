@@ -4,6 +4,7 @@
 - **创建日期**: 2026-10-17
 - **最后更新**: 2026-10-17
 - **实现分支 / PR**: `feature/private-system-symbols`
+- **配套文档**: [使用指南：私有 SF Symbols](../Guides/PrivateSymbols.md)
 
 ## 摘要
 
@@ -21,7 +22,7 @@
 
 两边都没有 entitlement、bundle ID 或内部版本之类的闸门，第三方进程可以用。UIKit 的方法在 macOS 11（Catalyst，对应 iOS 14）的 cache 里已经存在；iOS 13 无从验证，所以调用前一律先检查 `respondsToSelector:`。
 
-**包结构**：新增 trait `PrivateSymbols`。打开它时，`SFSymbols` 才依赖新的 ObjC target `SFSymbolsPrivate`，并定义 `SFSYMBOLS_PRIVATE`；做法与现有的 `SwiftUI` trait、UIFoundation 的 `AppleInternal` trait 一致。`SFSymbolsPrivate` 参照 PrivateSymbols 的 `PSSymbolImageFactory`，写一个工厂类：AppKit、UIKit 各一组方法，系统没有对应方法时返回 nil。所有私有方法名都只出现在这个 target 里。
+**包结构**：新增 trait `PrivateSymbols`。打开它时，`SFSymbols` 才依赖新的 ObjC target `SFSymbolsPrivate`，并定义 `SFSYMBOLS_PRIVATE`；做法与现有的 `SwiftUI` trait、UIFoundation 的 `AppleInternal` trait 一致。`SFSymbolsPrivate` 参照 PrivateSymbols 的 `PSSymbolImageFactory`，写一个工厂类：AppKit、UIKit 各一组方法，系统没有对应方法时返回 nil；只缺带 variableValue 的那个时，退回不带 variableValue 的方法。所有私有方法名都只出现在这个 target 里。
 
 **API**（全部写在 `#if SFSYMBOLS_PRIVATE` 下，与 `systemName:` 一族一一对应）
 - `SFSymbols.PrivateSystemSymbolName`，结构与 `SystemSymbolName` 相同，外加生成的静态常量。
@@ -31,10 +32,10 @@
 
 **名字常量**：在 `Scripts/` 下新增生成脚本。它读本机私有 bundle 的 `name_availability.plist`，生成 `Sources/SFSymbols/SFSymbols+PrivateSystemSymbolName.swift`，整个文件包在 `#if SFSYMBOLS_PRIVATE` 里。生成文件只放常量（`extension SFSymbols.PrivateSystemSymbolName`），类型本身写在手写的源文件里。排序、驼峰命名、`@available` 的规则都沿用公共清单的生成器（SFSymbolsGenerator 的 struct 模式）。Swift 关键字加反引号，因为私有清单里有一个叫 `switch` 的符号。
 
-**测试**：`swift test --traits PrivateSymbols` 下跑，默认跑法不受影响。
+**测试**：`swift test --traits PrivateSymbols` 下跑，SwiftUI 部分再加 `SwiftUI` trait，默认跑法不受影响。
 - 先断言公共 API 取不到某个名字，确认它真是私有符号，再断言本库能取到。
-- 配置修饰对私有符号生效；variableValue 路径能取到图。
-- 用 `ImageRenderer` 把 `Image(privateSystemName:)` 渲染出来，结果非空；`Image(name:)` 给出的结果与它相等。
+- 配置修饰对私有符号生效；variableValue 路径能取到图；名字不存在时 `nsuiImage` 让进程退出，报错信息指明找的是私有符号集（Swift Testing 的 exit test）。
+- 用 `ImageRenderer` 渲染：`Image(systemName:)` 画不出私有符号（前提）；`Image(privateSystemName:)` 和收到私有名字的 `Image(name:)` 都画得出；不存在的名字画出空图，进程不退出。
 
 **没有问、自己定的假设**
 - 取不到图时沿用现有契约，直接 `fatalError`，不为私有符号单独改成返回可选值。
@@ -47,7 +48,7 @@
 ## 落地步骤
 
 1. [x] **包结构与 ObjC 工厂**：`Package.swift` 加 trait `PrivateSymbols`、条件依赖的 target `SFSymbolsPrivate` 和 `SFSYMBOLS_PRIVATE`，写好工厂类。验证：默认构建和 `--traits PrivateSymbols` 构建都通过。
-2. [ ] **Swift API、测试与使用指南**：`PrivateSystemSymbolName` 类型（这一步还没有常量，测试用 `init(rawValue:)`），`SFSymbols`、`NSUIImage`、SwiftUI `Image` 的入口，`nsImage` / `uiImage` 的取图分支，测试，`Documentations/Guides/PrivateSymbols.md`。验证：macOS 上四种 trait 组合（都不开、只开 `PrivateSymbols`、只开 `SwiftUI`、都开）的 `swift test` 全部通过；iOS、Mac Catalyst、tvOS、watchOS、visionOS 用 `swift build --build-system native --triple` 交叉编译通过，不启动模拟器。
+2. [x] **Swift API、测试与使用指南**：`PrivateSystemSymbolName` 类型（这一步还没有常量，测试用 `init(rawValue:)`），`SFSymbols`、`NSUIImage`、SwiftUI `Image` 的入口，`nsImage` / `uiImage` 的取图分支，测试，`Documentations/Guides/PrivateSymbols.md`。验证：macOS 上四种 trait 组合（都不开、只开 `PrivateSymbols`、只开 `SwiftUI`、都开）的 `swift test` 全部通过；iOS、Mac Catalyst、tvOS、watchOS、visionOS 用 `swift build --build-system native --triple` 交叉编译通过（Mac Catalyst 另加 iOSSupport 的搜索路径），不启动模拟器。
 3. [ ] **生成脚本**：`Scripts/GeneratePrivateSystemSymbolNames.swift`。写完交给用户审阅，审阅通过前不运行。
 4. [ ] **生成名字常量**：运行脚本，提交生成的 `Sources/SFSymbols/SFSymbols+PrivateSystemSymbolName.swift`，测试与指南改用常量。验证同第 2 步。
 
@@ -63,3 +64,5 @@
 | 2026-10-17 | 状态改为 In Progress，在 `feature/private-system-symbols` 上实现 | — |
 | 2026-10-17 | 带 variableValue 的私有方法不存在时，退回不带 variableValue 的私有方法，不返回 nil | 照搬 PrivateSymbols 的 `PSSymbolImageFactory`。符号照常显示，只是没有 variableValue；不至于因为少一个可选效果就崩溃 |
 | 2026-10-17 | UIKit 平台的交叉编译改用 `--build-system native` | Xcode 27.2 默认的构建系统 swiftbuild 只接受 iOS 15 起的部署目标，本包声明的是 iOS 13，直接报错。这是包现有的问题，与本提案无关；native 构建系统按 iOS 13 照常编译 |
+| 2026-10-17 | `Image(name:)` 的测试改成「渲染得出图」，不比较两个 `Image` 是否相等 | 两个 `Image` 都由本库同一条路径构造，比较相等只能证明代码与自己一致；渲染结果才是调用方看得到的行为 |
+| 2026-10-17 | Mac Catalyst 的交叉编译手动加 `System/iOSSupport` 下的框架与 Swift 模块搜索路径 | SwiftPM 命令行按 `-macabi` triple 编译时不加这些路径，找不到 `UIKit/UIKit.h`；Xcode 构建会自动加，与代码无关 |
