@@ -1,6 +1,6 @@
-# Draft - 私有 SF Symbols 支持
+# 0001 - 私有 SF Symbols 支持
 
-- **状态**: In Progress
+- **状态**: Implemented
 - **创建日期**: 2026-10-17
 - **最后更新**: 2026-10-18
 - **实现分支 / PR**: `feature/private-system-symbols`
@@ -52,6 +52,12 @@
 3. [x] **生成插件**：`Plugins/GenerateSymbolNames/`，替换原先的 `Scripts/GeneratePrivateSystemSymbolNames.swift`；`SystemSymbolName` 的类型定义从生成文件挪到 `SFSymbols+SymbolName.swift`；实现说明 `Documentations/Internal/SymbolNameGeneration.md`。写完交给用户审阅，审阅通过前不运行。
 4. [x] **生成名字常量**：运行插件，提交两份生成文件，测试与指南改用常量。验证同第 2 步。
 
+## 后续项
+
+- 在 iOS 模拟器或真机上跑一遍私有符号的测试。本次没有获准启动模拟器，UIKit 平台只做了交叉编译。
+- 确认 iOS 13、tvOS 13、watchOS 6 上是否有 `_systemImageNamed:withConfiguration:`。目前只确认了 macOS 11 的 Mac Catalyst（对应 iOS 14）里有。
+- 与本提案无关、实现时发现的问题：本包声明的 iOS 13 等部署目标低于 Xcode 27.2 默认构建系统 swiftbuild 的下限（iOS 15），用 `swift build --triple` 交叉编译 iOS 会直接报错。
+
 ## 决策日志
 
 | 日期 | 决定 | 理由 |
@@ -73,3 +79,4 @@
 | 2026-10-18 | 插件忽略 `--target` 参数，其他不认识的参数照样报错 | 用户在 Xcode 里运行插件，报「Unknown arguments: --target SFSymbolsTests --target SFSymbols」：Xcode 会把对话框里选中的 target 传进来，而插件把不认识的参数都当错误。插件只生成 SFSymbols 一个 target，选了哪些不影响结果。用同样的参数在命令行复现了报错，修复后同一条命令通过 |
 | 2026-10-18 | 公共清单随第一次运行更新到 SF Symbols 27.0（多 340 个名字、没有删除），单独一个提交 | 插件按设计一次生成两份。用户没有明确回答要不要放进本分支，但已在 Xcode 里直接运行插件；单独成一个提交，不要时撤掉这一个即可 |
 | 2026-10-18 | 实现完成，待合并 | 四个落地步骤都已完成；验证同第 2 步，全部通过 |
+| 2026-10-18 | 落地：状态改为 Implemented，编号 0001 | 四个落地步骤都已实现；偏离最初方案的地方都记在上面各行（生成脚本换成包内命令插件、公共清单一起生成并更新到 SF Symbols 27.0、带 variableValue 的私有方法缺失时退回、测试的写法）。用户表示不需要「自动选用较新的 SF Symbols app」。配套文档：使用指南与实现说明都已写好并登记；新术语「私有符号」登记进新建的 `Documentations/Glossary.md`。没做完的列在「后续项」 |

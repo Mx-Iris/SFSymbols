@@ -1,7 +1,7 @@
 # 私有 SF Symbols
 
 > 加载随系统分发、但公共 API 取不到的私有符号。
-> 所在模块 / target：`SFSymbols`（trait `PrivateSymbols`），私有方法调用集中在 `SFSymbolsPrivate`。配套提案：[私有 SF Symbols 支持](../Evolutions/draft-private-system-symbols.md)。
+> 所在模块 / target：`SFSymbols`（trait `PrivateSymbols`），私有方法调用集中在 `SFSymbolsPrivate`。配套提案：[私有 SF Symbols 支持](../Evolutions/0001-private-system-symbols.md)。
 
 面向**调用方**。只讲怎么用、必须遵守什么、有什么坑。
 
@@ -36,7 +36,7 @@ struct AirDropLabel: View {
 
 ## 核心概念
 
-- **私有符号**：放在 `/System/Library/CoreServices/CoreGlyphsPrivate.bundle` 里的符号，macOS 27.2 上有 1902 个，例如 `airdrop`、`persona`。SF Symbols app 不列出它们；`NSImage(systemSymbolName:)`、`UIImage(systemName:)` 返回 nil，`Image(systemName:)` 画出空图。
+- **[私有符号](../Glossary.md#私有符号)**：放在 `/System/Library/CoreServices/CoreGlyphsPrivate.bundle` 里的符号，macOS 27.2 上有 1902 个，例如 `airdrop`、`persona`。SF Symbols app 不列出它们；`NSImage(systemSymbolName:)`、`UIImage(systemName:)` 返回 nil，`Image(systemName:)` 画出空图。
 - **`SFSymbols.PrivateSystemSymbolName`** 与 `SystemSymbolName` 平行，入口一一对应：`SFSymbols(privateSystemName:…)`、`NSUIImage.symbol(privateSystemName:…)`、SwiftUI 的 `Image(privateSystemName:)`。`Image(name:)` 收到私有名字时，也按私有符号处理。
 - **名字常量**：`PrivateSystemSymbolName` 上为每个私有名字生成了一个常量（`.airdrop`、`.persona`……），带 `@available`，标明这个名字从哪个系统版本开始出现。清单里没有的名字用 `PrivateSystemSymbolName(rawValue:)`。
 - **取图走系统的私有方法**：macOS 上是 `+[NSImage imageWithPrivateSystemSymbolName:accessibilityDescription:]`，iOS、tvOS、watchOS、visionOS、Mac Catalyst 上是 `+[UIImage _systemImageNamed:withConfiguration:]`，SwiftUI 用 `Image(_internalSystemName:)`。它们都先查公共符号集，查不到再查私有符号集，所以公共名字放进 `PrivateSystemSymbolName` 也能取到。
@@ -77,5 +77,5 @@ iOS、tvOS、watchOS、visionOS 的私有符号集合可能与 macOS 不同。�
 
 ## 延伸阅读
 
-- 配套提案：[私有 SF Symbols 支持](../Evolutions/draft-private-system-symbols.md)，包括逆向结论与被否决的接入方式。
+- 配套提案：[私有 SF Symbols 支持](../Evolutions/0001-private-system-symbols.md)，包括逆向结论与被否决的接入方式。
 - 参考实现：PrivateSymbols app 的 `PSSymbolImageFactory`。

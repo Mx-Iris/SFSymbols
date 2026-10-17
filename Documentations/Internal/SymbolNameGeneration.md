@@ -1,6 +1,6 @@
 # 名字常量的生成：实现说明
 
-> 配套提案见 [私有 SF Symbols 支持](../Evolutions/draft-private-system-symbols.md)。
+> 配套提案见 [私有 SF Symbols 支持](../Evolutions/0001-private-system-symbols.md)。
 > 本文记录生成名字常量的命令插件 `GenerateSymbolNames`：怎么运行、为什么这样做、有哪些坑。面向维护者。
 
 ## 背景与目标
@@ -56,5 +56,5 @@ Plugins/GenerateSymbolNames/
 
 ## 延伸阅读
 
-- 配套提案：[私有 SF Symbols 支持](../Evolutions/draft-private-system-symbols.md)
+- 配套提案：[私有 SF Symbols 支持](../Evolutions/0001-private-system-symbols.md)
 - 使用指南：[私有 SF Symbols](../Guides/PrivateSymbols.md)
