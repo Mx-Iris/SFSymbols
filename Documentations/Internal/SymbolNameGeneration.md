@@ -30,6 +30,8 @@
 
 **命名规则沿用 SFSymbolsGenerator，只有一处不同。** 先按发布年份、再按名字排序；名字按 `.` 拆开，第一段保持原样，其余各段首字母大写后拼起来；以数字开头的前面加 `_`；`@available` 列出该年份对应的各平台版本。不同之处：所有 Swift 关键字都加反引号，而 SFSymbolsGenerator 只处理 `return`、`case`、`repeat`。私有清单里有一个叫 `switch` 的符号，必须这样处理。
 
+**忽略 `--target`，其他不认识的参数一律报错。** Xcode 运行插件时，会把对话框里选中的 target 用 `--target` 传进来；插件只生成 SFSymbols 这一个 target，选了哪些不影响结果。其他参数照样报错，免得把 `--beta` 拼错后悄悄读了正式版的 app。
+
 **两份清单都读完、校验通过才动文件，任何一项出错就报错退出，两份文件都不动。** 校验三项：发布年份查不到平台版本、名字转不成合法的 Swift 标识符、两个名字转成了同一个标识符。这样系统新增的怪名字会立刻暴露，而不是生成出编译不过的文件，也不会只更新了一半。
 
 ## 模块结构
@@ -48,8 +50,9 @@ Plugins/GenerateSymbolNames/
 
 ## 验证
 
-- 插件源码按包的工具版本（PackageDescription 6.2）在 Swift 5 与 Swift 6 语言模式下都通过类型检查；`swift package plugin --list` 能列出 `generate-symbol-names`。
-- 生成结果靠编译与测试兜底：名字转错会编译失败，私有符号的测试直接引用生成的常量。
+- 第一次运行（2026-10-18，SF Symbols 27.0，macOS 27.2，带着 Xcode 会传的 `--target` 参数）：公共清单 9524 个名字，比 SFSymbolsGenerator 生成的旧文件多 340 个、没有删除，旧文件里 9184 个常量的每一行都没变，说明排序、命名、`@available` 与 SFSymbolsGenerator 一致；私有清单 1902 个。
+- 生成结果靠编译与测试兜底：名字转错会编译失败，私有符号的测试直接引用生成的常量 `.airdrop`。
+- 插件代码不能被测试 target 导入，所以没有自动化测试；改动插件后按上面的方式运行一次，看打印的增删统计与 `git diff`。
 
 ## 延伸阅读
 

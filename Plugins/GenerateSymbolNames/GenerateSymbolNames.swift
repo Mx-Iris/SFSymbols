@@ -12,6 +12,9 @@ import PackagePlugin
 struct GenerateSymbolNames: CommandPlugin {
     func performCommand(context: PluginContext, arguments: [String]) async throws {
         var argumentExtractor = ArgumentExtractor(arguments)
+        // Xcode passes the targets picked in its plugin dialog as `--target` options. The plugin always regenerates the
+        // SFSymbols target, so the picked targets do not matter.
+        _ = argumentExtractor.extractOption(named: "target")
         let readsBetaApp = argumentExtractor.extractFlag(named: "beta") > 0
         guard argumentExtractor.remainingArguments.isEmpty else {
             throw GenerationError("Unknown arguments: \(argumentExtractor.remainingArguments.joined(separator: " "))")
